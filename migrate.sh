@@ -5,7 +5,7 @@
 START=$( date +%s )
 
 TOOL="$1"
-BASE="~/repoconv"
+BASE="/home/vagrant/repoconv"
 WORK="work/toolrepos"
 
 PARENTS_OPT="--no-follow-parent"
@@ -14,7 +14,7 @@ AUTHORS_FILE="authors/combined.txt"
 # migrate tool
 git svn clone $PARENTS_OPT --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab/$TOOL $WORK/$TOOL
 
-cd $BASE/$WORK/$TOOL
+cd "$BASE/$WORK/$TOOL"
 
 # generate tags
 git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin/tags |
@@ -36,7 +36,7 @@ while read branch ref; do
 
 	# import svn:ignore
 	IGNORE=$( git svn show-ignore 2>/dev/null | grep -v "^#" | grep -v "^$" )
-	if [[ $IGNORE != "" ]]; then#
+	if [[ $IGNORE != "" ]]; then
 		echo "$IGNORE" > .gitignore
 		git add .gitignore
 		git commit -m "converting svn:ignore for $branch"
