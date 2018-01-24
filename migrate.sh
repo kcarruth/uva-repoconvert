@@ -5,15 +5,16 @@
 START=$( date +%s )
 
 TOOL="$1"
-BACK="~/repoconv"
+BASE="~/repoconv"
+WORK="work/toolrepos"
 
 PARENTS_OPT="--no-follow-parent"
 AUTHORS_FILE="authors/combined.txt"
 
 # migrate tool
-git svn clone $PARENTS_OPT --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab/$TOOL repos/$TOOL
+git svn clone $PARENTS_OPT --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab/$TOOL $WORK/$TOOL
 
-cd repos/$TOOL
+cd $BASE/$WORK/$TOOL
 
 # generate tags
 git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin/tags |
@@ -41,15 +42,15 @@ while read branch ref; do
 		git commit -m "converting svn:ignore for $branch"
 	fi
 
-	# shift down a level
-	#git filter-branch --index-filter "git ls-files -s | sed 's-\t\"*-&$TOOL/-' | GIT_INDEX_FILE=\"$GIT_INDEX_FILE.new\" git update-index --index-info && mv \"$GIT_INDEX_FILE.new\" \"$GIT_INDEX_FILE\" || true" HEAD
+	# shift down a level (prep for future merges into single repo)
+	#git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'"$TOOL"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && if [ -f $GIT_INDEX_FILE.new ]; then mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE; fi' HEAD
 
 	#git branch -r -d "origin/$branch"
 done
 
 #git branch -D master
 
-cd $BACK
+cd $BASE
 
 FINISH=$( date +%s )
 
