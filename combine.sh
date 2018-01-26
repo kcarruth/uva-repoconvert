@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# combine disparate tool repos into one big repo
+# combine disparate tool repos into one big archival repo (for prev versions of sakai)
 
 START=$( date +%s )
 
@@ -61,6 +61,12 @@ for VERSION in $VERSIONS; do
 			fi
 
 		done # end foreach $STATES
+
+		# delete master
+		if [[ $( git branch | grep -v "master" ) ]]; then
+			git checkout prod
+			git branch -D master
+		fi
 
 	fi # end if ! repodir
 
