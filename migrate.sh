@@ -9,9 +9,15 @@ WORK="work/toolrepos"
 
 SVN_CLONE_OPTS="--no-follow-parent"
 AUTHORS_FILE="authors/combined.txt"
+SVN_ROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab"
 
-#TOOL="$1"
-for TOOL in $( svn ls svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab | sed "s|/$||" ); do
+if [[ $1 ]]; then
+	TOOLS="$1"
+else
+	TOOLS=$( svn ls $SVN_ROOT | sed "s|/$||" )
+fi
+
+for TOOL in $TOOLS; do
 
 if [[ $TOOL == "" ]]; then
 	echo "error: no tool specified."
@@ -19,7 +25,7 @@ if [[ $TOOL == "" ]]; then
 fi
 
 # migrate tool
-git svn clone $SVN_CLONE_OPTS --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab/$TOOL $WORK/$TOOL
+git svn clone $SVN_CLONE_OPTS --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE $SVN_ROOT/$TOOL $BASE/$WORK/$TOOL
 
 cd "$BASE/$WORK/$TOOL"
 
