@@ -37,8 +37,9 @@ for VERSION in $VERSIONS; do
 				if [[ $( cd $TOOLS/$tool; git branch | grep "$branch") ]]; then
 
 					git remote add -t "$branch" $tool $TOOLS/$tool
-					git fetch $tool
-					git merge -m "$repo/$STATE: importing $tool" --commit "$tool/$branch"
+					#git fetch $tool
+					#git merge -m "$repo/$STATE: importing $tool" --commit "$tool/$branch"
+					git pull --rebase $tool
 					git remote rm $tool
 
 				fi
