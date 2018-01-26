@@ -4,15 +4,22 @@
 
 START=$( date +%s )
 
-TOOL="$1"
 BASE="/home/vagrant/repoconv"
 WORK="work/toolrepos"
 
-PARENTS_OPT="--no-follow-parent"
+SVN_CLONE_OPTS="--no-follow-parent"
 AUTHORS_FILE="authors/combined.txt"
 
+#TOOL="$1"
+for TOOL in $( svn ls svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab | sed "s|/$||" ); do
+
+if [[ $TOOL == "" ]]; then
+	echo "error: no tool specified."
+	exit
+fi
+
 # migrate tool
-git svn clone $PARENTS_OPT --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab/$TOOL $WORK/$TOOL
+git svn clone $SVN_CLONE_OPTS --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab/$TOOL $WORK/$TOOL
 
 cd "$BASE/$WORK/$TOOL"
 
@@ -28,6 +35,8 @@ done
 # generate branches
 git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin | grep -v "^origin/SAK" | grep -v "@.*$" |
 while read branch ref; do
+	echo "svn-to-git conversion for $TOOL/$branch: " > commitmsg
+
     branch=`echo $branch | sed "s|origin/||g"`
     git branch $branch $ref
 
@@ -39,18 +48,37 @@ while read branch ref; do
 	if [[ $IGNORE != "" ]]; then
 		echo "$IGNORE" > .gitignore
 		git add .gitignore
-		git commit -m "converting svn:ignore for $branch"
+		echo " - converting svn:ignore props" >> commitmsg
+		#git commit -m "converting svn:ignore for $TOOL/$branch"
 	fi
 
+	emptydirs=$( find . -type d -empty | grep -v "/\.git/" )
+	if [[ -n $emptydirs ]]; then
+		for emptydir in $emptydirs; do
+			touch "$emptydir/.placeholder"
+			git add "$emptydir/.placeholder"
+		done
+		" - adding placeholders to empty directories" >> commitmsg
+	fi
+
+	if [[ -n $( git diff-index --name-only HEAD -- ) ]]; then
+		git commit -F commitmsg
+	fi	
+	rm commitmsg
+
 	# shift down a level (prep for future merges into single repo)
-	#git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'"$TOOL"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && if [ -f $GIT_INDEX_FILE.new ]; then mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE; fi' HEAD
+	git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'"$TOOL"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && if [ -f $GIT_INDEX_FILE.new ]; then mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE; fi' HEAD
+	#git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'"$TOOL"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE || true' HEAD
 
 	#git branch -r -d "origin/$branch"
 done
 
-#git branch -D master
+git branch -D master
 
 cd $BASE
+
+# end of main for loop
+done
 
 FINISH=$( date +%s )
 
