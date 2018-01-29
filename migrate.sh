@@ -12,18 +12,18 @@ AUTHORS_FILE="authors/combined.txt"
 SVN_ROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab"
 
 if [[ $1 ]]; then
-	TOOLS="$1"
+	if [[ "$1" == "--all" ]]; then
+		TOOLS=$( svn ls $SVN_ROOT | sed "s|/$||" )
+	else
+		TOOLS="$1"
+	fi
 else
-	TOOLS=$( svn ls $SVN_ROOT | sed "s|/$||" )
+	echo "error: no tool (or --all) specified."
+	exit
 fi
 
 for TOOL in $TOOLS; do
 
-	if [[ $TOOL == "" ]]; then
-		echo "error: no tool specified."
-		exit
-	fi
-	
 	# migrate tool
 	git svn clone $SVN_CLONE_OPTS --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE $SVN_ROOT/$TOOL $BASE/$WORK/$TOOL
 	
