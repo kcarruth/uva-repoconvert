@@ -41,9 +41,8 @@ for TOOL in $TOOLS; do
 	# generate branches
 	git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin | grep -v "^origin/SAK" | grep -v "@.*$" |
 	while read branch ref; do
-		echo "svn-to-git conversion for $TOOL/$branch: " > commitmsg
-	
 	    branch=`echo $branch | sed "s|origin/||g"`
+		echo "svn-to-git conversion for $TOOL/$branch: " > commitmsg
 	    git branch $branch $ref
 	
 		# in-branch work
@@ -52,10 +51,10 @@ for TOOL in $TOOLS; do
 		# import svn:ignore
 		IGNORE=$( git svn show-ignore 2>/dev/null | grep -v "^#" | grep -v "^$" )
 		if [[ $IGNORE != "" ]]; then
-			echo "$IGNORE" > .gitignore
-			git add .gitignore
-			echo " - converting svn:ignore props" >> commitmsg
-			#git commit -m "converting svn:ignore for $TOOL/$branch"
+			if [[ ! -d "$BASE/work/ignore/$TOOL" ]]; then
+				mkdir "$BASE/work/ignore/$TOOL"
+			fi
+			echo "$IGNORE" > "${BASE}/work/ignore/${TOOL}/${branch}"
 		fi
 	
 		emptydirs=$( find . -type d -empty | grep -v "/\.git/" )
