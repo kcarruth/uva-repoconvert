@@ -63,7 +63,7 @@ for TOOL in $TOOLS; do
 				touch "$emptydir/.placeholder"
 				git add "$emptydir/.placeholder"
 			done
-			" - adding placeholders to empty directories" >> commitmsg
+			echo " - adding placeholders to empty directories" >> commitmsg
 		fi
 	
 		if [[ -n $( git diff-index --name-only HEAD -- ) ]]; then
