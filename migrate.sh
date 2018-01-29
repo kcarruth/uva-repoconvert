@@ -7,9 +7,12 @@ START=$( date +%s )
 BASE="/home/vagrant/repoconv"
 WORK="work/tools"
 
-SVN_CLONE_OPTS="--no-follow-parent"
-AUTHORS_FILE="authors/combined.txt"
 SVN_ROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab"
+AUTHORS_FILE="$BASE/authors/combined.txt"
+
+INIT_OPTS="--no-metadata"
+FETCH_OPTS="--no-follow-parent --authors-file=$AUTHORS_FILE"
+CLONE_OPTS="$SVN_INIT_OPTS $SVN_FETCH_OPTS"
 
 if [[ $1 ]]; then
 	if [[ "$1" == "--all" ]]; then
@@ -24,20 +27,26 @@ fi
 
 for TOOL in $TOOLS; do
 
+	echo "====================================="
+	echo "TOOL: $TOOL"
+	echo "====================================="
+
+	# get list of branches to migrate
+	for b in $( svn ls $SVN_ROOT/$TOOL/branches | egrep "sakai_" | sed "s/\/$//" ); do
+		if [[ -n $branches ]]; then
+			branches="$branches,"
+		fi
+		branches="$branches$b"
+	done
+
 	# migrate tool
-	git svn clone $SVN_CLONE_OPTS --branches=/branches --tags=/vendor --authors-file=$AUTHORS_FILE $SVN_ROOT/$TOOL $BASE/$WORK/$TOOL
+	git svn init $INIT_OPTS --branches=REPLACEHERE $SVN_ROOT/$TOOL $BASE/$WORK/$TOOL
 	
 	cd "$BASE/$WORK/$TOOL"
+	sed -i "s|REPLACEHERE/\*|branches/\{$branches\}|" .git/config
 	
-	# generate tags
-	git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin/tags |
-	while read tag ref; do
-	    tag=`echo $tag | sed "s|origin/tags/||g"`
-	    comment="$(git log -1 --format=format:%B $ref)"
-	    git tag -a $tag -m "$comment" $ref
-	    git branch -r -d "origin/tags/$tag"
-	done
-	
+	git svn fetch $FETCH_OPTS
+
 	# generate branches
 	git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin | grep -v "^origin/SAK" | grep -v "@.*$" |
 	while read branch ref; do
