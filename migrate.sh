@@ -5,7 +5,7 @@
 START=$( date +%s )
 
 BASE="/home/vagrant/repoconv"
-WORK="work/toolrepos"
+WORK="work/tools"
 
 SVN_CLONE_OPTS="--no-follow-parent"
 AUTHORS_FILE="authors/combined.txt"
