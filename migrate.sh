@@ -10,7 +10,8 @@ WORK="work/tools"
 SVN_ROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab"
 AUTHORS_FILE="$BASE/authors/combined.txt"
 
-INIT_OPTS="--no-metadata"
+INIT_OPTS=""
+#INIT_OPTS="--no-metadata"
 FETCH_OPTS="--no-follow-parent --authors-file=$AUTHORS_FILE"
 CLONE_OPTS="$SVN_INIT_OPTS $SVN_FETCH_OPTS"
 
