@@ -43,6 +43,7 @@ for VERSION in $VERSIONS; do
 
 			# loop through tool dirs, importing
 			for tool in $( ls $TOOLS ); do
+			#for tool in announcement assignment; do
 
 				if [[ $( cd $TOOLS/$tool; git branch | grep "$branch") ]]; then
 
@@ -51,9 +52,10 @@ for VERSION in $VERSIONS; do
 					echo ">>"
 
 					git remote add -t "$branch" $tool $TOOLS/$tool
-					#git fetch $tool
+					git fetch $tool
 					#git merge -m "$repo/$STATE: importing $tool" --commit "$tool/$branch"
-					git pull --rebase $tool
+					git rebase --committer-date-is-author-date $tool/$branch
+					#git pull --rebase $tool
 					git remote rm $tool
 
 					# converted svn:ignore
