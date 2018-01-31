@@ -9,7 +9,8 @@ VERSIONS="2-5-x"
 STATES="dev test preprod prod"
 
 BASE="/home/vagrant/repoconv"
-TOOLS="$BASE/work/toolrepos"
+TOOLS="$BASE/work/tools"
+IGNORE="$BASE/work/ignore"
 WORK="$BASE/work/combined"
 SVNROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai"
 
@@ -26,8 +27,17 @@ for VERSION in $VERSIONS; do
 
 		# create branch for each prodstatus
 		for STATE in $STATES; do
+
+			echo ">"
+			echo "> $VERSION/$STATE"
+			echo ">"
+
 			git checkout master
 			git checkout -b $STATE
+
+			if [[ -f .gitignore ]]; then
+				rm .gitignore
+			fi
 
 			branch="sakai_${VERSION}_${STATE}"
 
@@ -36,26 +46,45 @@ for VERSION in $VERSIONS; do
 
 				if [[ $( cd $TOOLS/$tool; git branch | grep "$branch") ]]; then
 
+					echo ">>"
+					echo ">> $VERSION / $STATE / $tool"
+					echo ">>"
+
 					git remote add -t "$branch" $tool $TOOLS/$tool
 					#git fetch $tool
 					#git merge -m "$repo/$STATE: importing $tool" --commit "$tool/$branch"
 					git pull --rebase $tool
 					git remote rm $tool
 
+					# converted svn:ignore
+					if [[ -f $IGNORE/$tool/$branch ]]; then
+						for i in $( cat $IGNORE/$tool/$branch | sed "s|^/||" ); do
+							echo "$tool/$i" >> .gitignore
+						done
+					fi
+
 				fi
 
 			done # end foreach TOOL
 
-			# if nothing got added, then that branch didn't exist (ex: 2-5-x_dev/preprod)
 			if [[ $( ls ) ]]; then
 
 				# export and commit top-level build pom
 				svn export $SVNROOT/uva-collab-build/branches/$branch/pom.xml pom.xml
 				git add pom.xml
-				git commit -m "$repo/$STATE: importing top-level build pom"
+				commitmsg="importing top-level build pom"
+
+				# add ignores
+				if [[ -f .gitignore ]]; then
+					git add .gitignore
+					commitmsg="$commitmsg and converted svn:ignore props"
+				fi
+
+				git commit -m "$commitmsg"
 
 			else
 
+				# if nothing got added, then that branch didn't exist (ex: 2-5-x_dev/preprod)
 				git checkout master
 				git branch -D $STATE
 
