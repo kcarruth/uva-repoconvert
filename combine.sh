@@ -72,7 +72,8 @@ for VERSION in $VERSIONS; do
 			if [[ $( ls ) ]]; then
 
 				# export and commit top-level build pom
-				svn export $SVNROOT/uva-collab-build/branches/$branch/pom.xml pom.xml
+				svnpom="$SVNROOT/uva-collab-build/branches/$branch/pom.xml"
+				svn export $svnpom pom.xml
 				git add pom.xml
 				commitmsg="importing top-level build pom"
 
@@ -82,7 +83,9 @@ for VERSION in $VERSIONS; do
 					commitmsg="$commitmsg and converted svn:ignore props"
 				fi
 
-				git commit -m "$commitmsg"
+				# set date to past to fit w/ rest of repo
+				comdate=$( svn info --show-item last-changed-date $svnpom )
+				GIT_COMMITTER_DATE="$comdate" git commit -m "$commitmsg" --date="$comdate"
 
 			else
 
