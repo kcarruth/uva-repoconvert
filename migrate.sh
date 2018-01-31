@@ -52,7 +52,6 @@ for TOOL in $TOOLS; do
 	git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin | grep -v "^origin/SAK" | grep -v "@.*$" |
 	while read branch ref; do
 	    branch=`echo $branch | sed "s|origin/||g"`
-		echo "svn-to-git conversion for $TOOL/$branch: " > commitmsg
 	    git branch $branch $ref
 	
 		# in-branch work
@@ -66,7 +65,8 @@ for TOOL in $TOOLS; do
 			fi
 			echo "$IGNORE" > "${BASE}/work/ignore/${TOOL}/${branch}"
 		fi
-	
+
+		# need to populate empty dirs, otherwise subsequent filter-branch doesn't move everything	
 		emptydirs=$( find . -type d -empty | grep -v "/\.git/" )
 		if [[ -n $emptydirs ]]; then
 			for emptydir in $emptydirs; do
@@ -77,14 +77,16 @@ for TOOL in $TOOLS; do
 		fi
 	
 		if [[ -n $( git diff-index --name-only HEAD -- ) ]]; then
-			git commit -F commitmsg
+			git commit -m "temporary placeholders for empty dirs"
 		fi	
-		rm commitmsg
 	
 		# shift down a level (prep for future merges into single repo)
 		git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'"$TOOL"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && if [ -f $GIT_INDEX_FILE.new ]; then mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE; fi' HEAD
 		#git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'"$TOOL"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE || true' HEAD
-	
+
+		# now remove the placeholder commit
+		git reset --hard HEAD^	
+
 		#git branch -r -d "origin/$branch"
 	done
 	
