@@ -118,11 +118,16 @@ for VERSION in $VERSIONS; do
 					commitmsg="$commitmsg and converted svn:ignore props"
 				fi
 
+				echo "$commitmsg" > /tmp/commitmsg
+				echo "commit done on $( date +%F ) @ $( date +%T ), backdated to match pom.xml last modified date in svn" >> /tmp/commitmsg
+
 				# set date to past to fit w/ rest of repo
 				comdate=$( svn info --show-item last-changed-date $svnpom )
 				if [[ -n "$comdate" && -f pom.xml ]]; then
-					GIT_COMMITTER_DATE="$comdate" git commit -m "$commitmsg" --date="$comdate"
+					GIT_COMMITTER_DATE="$comdate" git commit -F "/tmp/commitmsg" --date="$comdate"
 				fi
+
+				rm /tmp/commitmsg
 
 			else
 
