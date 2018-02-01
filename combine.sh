@@ -52,8 +52,7 @@ for VERSION in $VERSIONS; do
 			branch="sakai_${VERSION}_${STATE}"
 
 			# loop through tool dirs, importing
-			#for tool in $( ls $TOOLS ); do
-			for tool in assignment announcement; do
+			for tool in $( ls $TOOLS ); do
 
 				if [[ $( cd $TOOLS/$tool; git branch | grep "$branch") ]]; then
 
@@ -121,7 +120,9 @@ for VERSION in $VERSIONS; do
 
 				# set date to past to fit w/ rest of repo
 				comdate=$( svn info --show-item last-changed-date $svnpom )
-				GIT_COMMITTER_DATE="$comdate" git commit -m "$commitmsg" --date="$comdate"
+				if [[ -n "$comdate" && -f pom.xml ]]; then
+					GIT_COMMITTER_DATE="$comdate" git commit -m "$commitmsg" --date="$comdate"
+				fi
 
 			else
 
