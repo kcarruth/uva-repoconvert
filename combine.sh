@@ -144,6 +144,5 @@ for VERSION in $VERSIONS; do
 done # end foreach $REPOS
 
 # print runtime
-FINISH=$( date +%s )
-TIME=$( expr $FINISH - $START )
-echo "Finished in $TIME seconds"
+TIME=$( expr $(date +%s) - $START )
+echo "Finished in $TIME seconds at $( date +%F\ %T )"

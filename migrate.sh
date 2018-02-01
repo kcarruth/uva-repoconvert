@@ -97,8 +97,5 @@ for TOOL in $TOOLS; do
 # end of main for loop
 done
 
-FINISH=$( date +%s )
-
-TIME=$( expr $FINISH - $START )
-
-echo "Finished in $TIME seconds"
+TIME=$( expr $(date +%s) - $START )
+echo "Finished in $TIME seconds at $( date +%F\ %T )"
