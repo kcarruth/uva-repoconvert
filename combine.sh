@@ -74,12 +74,35 @@ for VERSION in $VERSIONS; do
 
 			if [[ $( ls ) ]]; then
 
-				# export and commit top-level build pom
+				# find top-level build pom 
+				#  (in some sakai versions, it's nested under an additional "tools" subdir)
+				nested="false"
 				svnpom="$SVNROOT/uva-collab-build/branches/$branch/pom.xml"
-				if [[ ! $( svn ls $pom 2>/dev/null ) ]]; then
+				if [[ ! $( svn ls $svnpom 2>/dev/null ) ]]; then
 					svnpom="$SVNROOT/uva-collab-build/branches/$branch/tools/pom.xml"
+					nested="true"
 				fi
+
+				# export top-level pom
 				svn export $svnpom pom.xml
+
+				# fix up nested pom w/ kernel & pure-poms (separated in svn to avoid full builds)
+				if [[ "$nested" == "true" ]]; then
+					line=0
+					if [[ $( grep "<id>full</id>" pom.xml ) ]]; then
+						line=$( sed -n '/<id>full</,/<modules>/{=;p}' pom.xml | sed '{N;s/\n/ /}' | grep "<modules>" | sed -r "s/[^0-9]+$//" )
+					elif [[ $( grep "<id>all</id>" pom.xml ) ]]; then
+						line=$( sed -n '/<id>all</,/<modules>/{=;p}' pom.xml | sed '{N;s/\n/ /}' | grep "<modules>" | sed -r "s/[^0-9]+$//" )
+					fi
+					if [[ $line -gt 0 ]]; then
+						if [[ $( svn ls $SVNROOT/uva-collab/pure-poms/branches/$branch 2>/dev/null ) ]]; then
+							sed -i "$line a \                <module>pure-poms</module>" pom.xml
+						fi
+						sed -i "$line a \                <module>kernel</module>" pom.xml
+					fi
+				fi
+
+				# add/commit
 				git add pom.xml
 				commitmsg="importing top-level build pom"
 
