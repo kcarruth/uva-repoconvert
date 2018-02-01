@@ -4,8 +4,12 @@
 
 START=$( date +%s )
 
-#VERSIONS="2-5-x 2-6-x 2-7-x 2-8-x 2-9-x 10-x"
-VERSIONS="2-5-x"
+if [[ $1 ]]; then
+	VERSIONS="$1"
+else
+	VERSIONS="2-5-x 2-6-x 2-7-x 2-8-x 2-9-x 10-x"
+fi
+
 STATES="dev test preprod prod"
 
 BASE="/home/vagrant/repoconv"
@@ -43,7 +47,6 @@ for VERSION in $VERSIONS; do
 
 			# loop through tool dirs, importing
 			for tool in $( ls $TOOLS ); do
-			#for tool in announcement assignment; do
 
 				if [[ $( cd $TOOLS/$tool; git branch | grep "$branch") ]]; then
 
@@ -73,6 +76,9 @@ for VERSION in $VERSIONS; do
 
 				# export and commit top-level build pom
 				svnpom="$SVNROOT/uva-collab-build/branches/$branch/pom.xml"
+				if [[ ! $( svn ls $pom 2>/dev/null ) ]]; then
+					svnpom="$SVNROOT/uva-collab-build/branches/$branch/tools/pom.xml"
+				fi
 				svn export $svnpom pom.xml
 				git add pom.xml
 				commitmsg="importing top-level build pom"
