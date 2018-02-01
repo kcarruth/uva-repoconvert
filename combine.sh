@@ -23,7 +23,10 @@ for VERSION in $VERSIONS; do
 	repo=$( echo $VERSION | sed "s/-/./g" )
 
 	# create empty repo
-	if [[ ! -d "$WORK/$repo" ]]; then
+	if [[ -d "$WORK/$repo" ]]; then
+		echo "error: combined repo already exists. previous run perhaps?"
+		continue
+	else
 		mkdir "$WORK/$repo"
 		cd "$WORK/$repo"
 		git init
@@ -36,7 +39,10 @@ for VERSION in $VERSIONS; do
 			echo "> $VERSION/$STATE"
 			echo ">"
 
+			# check out master (blank) and clear up any lingering crap (in case of svn errors or the like)
 			git checkout master
+			git clean -f
+
 			git checkout -b $STATE
 
 			if [[ -f .gitignore ]]; then
@@ -46,7 +52,8 @@ for VERSION in $VERSIONS; do
 			branch="sakai_${VERSION}_${STATE}"
 
 			# loop through tool dirs, importing
-			for tool in $( ls $TOOLS ); do
+			#for tool in $( ls $TOOLS ); do
+			for tool in assignment announcement; do
 
 				if [[ $( cd $TOOLS/$tool; git branch | grep "$branch") ]]; then
 
