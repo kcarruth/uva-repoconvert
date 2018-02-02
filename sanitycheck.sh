@@ -2,6 +2,8 @@
 #
 # after migration / combination process is done, do some basic checking for completion
 
+START=$( date +%s )
+
 BASEDIR="/home/vagrant/repoconv"
 WORKDIR="$BASEDIR/work"
 TOOLDIR="$WORKDIR/tools"
@@ -14,7 +16,7 @@ IGNOREMSGS=(
 	"initializing svnmerge from"
 	"uninitializing old svnmerge watches from"
 	"Initialized merge tracking via \"svnmerge\""
-	"Removed merge tracking for \"svnmerge\""
+	"Removed merge tracking for \"svnmerge\" for"
 	"hiding [a-z]+ target dirs from svn"
 	"hiding target directories from svn"
 )
@@ -24,8 +26,6 @@ if [[ $1 ]]; then
 else
 	REPOS=$( ls $REPODIR )
 fi
-
-svntools=$( svn ls $SVNROOT/uva-collab | sed "s|/$||" )
 
 # verify top poms and last commits match up
 for gitrepo in $REPOS; do
@@ -42,9 +42,16 @@ for gitrepo in $REPOS; do
 	cd $REPODIR/$gitrepo
 	svnversion=$( echo $gitrepo | sed "s/\./-/g" )
 
+	# ensure all branches that should exist do exist
+	for eb in $( ls $WORKDIR/expected | grep "${svnversion}_" | sed -r "s/^[^_]+_//" ); do
+		if [[ ! $( git branch | sed "s/..//" | grep "$eb" ) ]]; then
+			echo "MISSING BRANCH: $gitrepo / $eb"
+		fi
+	done
+
 	for gitbranch in $( git branch | sed "s/^..//" ); do
 
-		git checkout $gitbranch 2>/dev/null
+		git checkout $gitbranch 1>/dev/null 2>&1
 
 		if [[ ! -f pom.xml ]]; then
 			echo "MISSING TOP POM: $gitrepo / $gitbranch"
@@ -77,15 +84,17 @@ for gitrepo in $REPOS; do
 					# infinite loop protection
 					if [[ $svnrev -eq $last_checked ]]; then
 						last_svncommit="$svnrev"
-echo "breaking out of loop"
+						echo "breaking out of loop (should never see this, hopefully)"
 						break
 					fi
 
 					last_checked="$svnrev"	
 
 					ignorecommit="0"
-					for imsg in "$IGNOREMSGS"; do
-						if svn log $svnbranch -r$svnrev | egrep "$imsg"; then
+					fullmsg=$(svn log $svnbranch -r$svnrev)
+					for ((i=0; i< ${#IGNOREMSGS[@]}; i++)) do
+						imsg="${IGNOREMSGS[$i]}"
+						if [[ $( echo "$fullmsg" | egrep "$imsg") ]]; then
 							ignorecommit="1"
 						fi
 					done
@@ -112,29 +121,19 @@ echo "breaking out of loop"
 
 		done # end foreach tool
 
+		# check that each repo is complete
+		for svntool in $( cat $WORKDIR/expected/${svnversion}_${gitbranch} ); do
+
+			if [[ ! -d $svntool ]]; then
+				echo "MISSING TOOL: $svntool not found in $gitrepo / $gitbranch"
+			fi
+
+		done # end each svn tool
+
 	done # end foreach git branch
 
-	# verify each appropriate tool got imported and combined
-	for svntool in $svntools; do 
-
-		for svnbranch in $( svn ls $SVNROOT/uva-collab/$svntool/branches | grep "sakai_${svnversion}_" ); do
-
-			gitbranch=$( echo $svnbranch | sed "s/sakai_${svnversion}_//" | sed "s|/$||" ) # dev/test/etc
-
-			if [[ $( git branch | sed "s/^..//" | grep "$gitbranch" ) ]]; then			
-
-				git checkout $gitbranch 2>/dev/null
-
-				if [[ ! -d $svntool ]]; then
-					echo "MISSING TOOL: $svntool not found in $gitrepo / $gitbranch"
-				fi
-			else 
-				echo "MISSING BRANCH: $svntool/$gitbranch missing from $gitrepo"
-			fi			
-
-		done # end each svnbranch		
-
-	done #end foreach svn tool
 
 done # end foreach git repo
 
+TIME=$( expr $(date +%s) - $START )
+echo "Finished in $TIME seconds at $( date +%F\ %T )"
