@@ -53,7 +53,7 @@ for gitrepo in $REPOS; do
 
 		for tool in $( find . -maxdepth 1 -type d | grep -v "\.git" | egrep -v "^\.$" | sed "s|^\./||" | sort ); do
 
-			if [[ $( svn ls $SVNROOT/uva-collab/$tool/branches 2>/dev/null ) ]]; then
+			if [[ $( svn ls $SVNROOT/uva-collab/$tool 2>/dev/null | grep "branches" ) ]]; then
 
 				svnbranch="$SVNROOT/uva-collab/$tool/branches/sakai_${svnversion}_${gitbranch}"
 
@@ -68,10 +68,20 @@ for gitrepo in $REPOS; do
 				# git conversion ignored svnmerge inits and the like, so accomodate
 				found_last_svncommit="0"
 				svn_backlog="2"
+				last_checked=""
 				while [ $found_last_svncommit -eq 0 ]; do
 					declare -a svnrevs					
 					mapfile -t svnrevs < <( svn log -q -l $svn_backlog $svnbranch | egrep "^r" | sed -r "s/^r([0-9]+) \|.*$/\1/" )
 					svnrev=${svnrevs[-1]}
+
+					# infinite loop protection
+					if [[ $svnrev -eq $last_checked ]]; then
+						last_svncommit="$svnrev"
+echo "breaking out of loop"
+						break
+					fi
+
+					last_checked="$svnrev"	
 
 					ignorecommit="0"
 					for imsg in "$IGNOREMSGS"; do
