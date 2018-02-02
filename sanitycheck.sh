@@ -43,20 +43,26 @@ for gitrepo in $REPOS; do
 	svnversion=$( echo $gitrepo | sed "s/\./-/g" )
 
 	# ensure all branches that should exist do exist
+	echo "checking for missing branches..."
 	for eb in $( ls $WORKDIR/expected | grep "${svnversion}_" | sed -r "s/^[^_]+_//" ); do
 		if [[ ! $( git branch | sed "s/..//" | grep "$eb" ) ]]; then
 			echo "MISSING BRANCH: $gitrepo / $eb"
 		fi
 	done
 
+	echo ""
+
 	for gitbranch in $( git branch | sed "s/^..//" ); do
 
 		git checkout $gitbranch 1>/dev/null 2>&1
 
+		echo "$gitbranch: checking for missing pom..."
 		if [[ ! -f pom.xml ]]; then
 			echo "MISSING TOP POM: $gitrepo / $gitbranch"
 		fi
 
+		echo ""
+		echo "$gitbranch: checking last commits"
 
 		for tool in $( find . -maxdepth 1 -type d | grep -v "\.git" | egrep -v "^\.$" | sed "s|^\./||" | sort ); do
 
@@ -118,9 +124,11 @@ for gitrepo in $REPOS; do
 				fi
 
 			fi # end if /branches exists in svn
-
 		done # end foreach tool
 
+		echo ""
+		echo "checking for repo completion..."
+		
 		# check that each repo is complete
 		for svntool in $( cat $WORKDIR/expected/${svnversion}_${gitbranch} ); do
 
