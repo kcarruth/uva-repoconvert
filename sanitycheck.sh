@@ -17,8 +17,10 @@ IGNOREMSGS=(
 	"uninitializing old svnmerge watches from"
 	"Initialized merge tracking via \"svnmerge\""
 	"Removed merge tracking for \"svnmerge\" for"
-	"hiding [a-z]+ target dirs from svn"
 	"hiding target directories from svn"
+	"hiding target dirs from svn"
+	"hiding [^ ]+ target dirs"
+	"Cleanup Merge of trunk into"
 )
 
 if [[ $1 ]]; then
@@ -30,7 +32,6 @@ fi
 # verify top poms and last commits match up
 for gitrepo in $REPOS; do
 
-	echo ""
 	echo "starting $gitrepo"
 	echo "=============================="
 
@@ -43,30 +44,34 @@ for gitrepo in $REPOS; do
 	svnversion=$( echo $gitrepo | sed "s/\./-/g" )
 
 	# ensure all branches that should exist do exist
-	echo "checking for missing branches..."
+	echo "> checking for missing branches..."
 	for eb in $( ls $WORKDIR/expected | grep "${svnversion}_" | sed -r "s/^[^_]+_//" ); do
 		if [[ ! $( git branch | sed "s/..//" | grep "$eb" ) ]]; then
-			echo "MISSING BRANCH: $gitrepo / $eb"
+			echo "  > missing branch $gitrepo / $eb"
 		fi
 	done
 
 	echo ""
 
+	echo "> checking branch contents..."
 	for gitbranch in $( git branch | sed "s/^..//" ); do
+	#for gitbranch in prod; do
 
 		git checkout $gitbranch 1>/dev/null 2>&1
 
-		echo "$gitbranch: checking for missing pom..."
+		echo "  > $gitbranch: checking for missing pom..."
 		if [[ ! -f pom.xml ]]; then
-			echo "MISSING TOP POM: $gitrepo / $gitbranch"
+			echo "  > missing top-pom in $gitrepo / $gitbranch"
 		fi
 
 		echo ""
-		echo "$gitbranch: checking last commits"
+		echo "  > $gitbranch: comparing latest commits"
 
 		for tool in $( find . -maxdepth 1 -type d | grep -v "\.git" | egrep -v "^\.$" | sed "s|^\./||" | sort ); do
+		#for tool in signup; do
 
 			if [[ $( svn ls $SVNROOT/uva-collab/$tool 2>/dev/null | grep "branches" ) ]]; then
+				#echo "    > checking $tool..."
 
 				svnbranch="$SVNROOT/uva-collab/$tool/branches/sakai_${svnversion}_${gitbranch}"
 
@@ -79,38 +84,25 @@ for gitrepo in $REPOS; do
 				fi
 
 				# git conversion ignored svnmerge inits and the like, so accomodate
-				found_last_svncommit="0"
-				svn_backlog="2"
-				last_checked=""
-				while [ $found_last_svncommit -eq 0 ]; do
-					declare -a svnrevs					
-					mapfile -t svnrevs < <( svn log -q -l $svn_backlog $svnbranch | egrep "^r" | sed -r "s/^r([0-9]+) \|.*$/\1/" )
-					svnrev=${svnrevs[-1]}
+				declare -a svnrevs					
+				mapfile -t svnrevs < <( svn log -q -r${last_svncommit}:${last_gitcommit} $svnbranch | egrep "^r" | sed -r "s/^r([0-9]+) \|.*$/\1/" )
 
-					# infinite loop protection
-					if [[ $svnrev -eq $last_checked ]]; then
-						last_svncommit="$svnrev"
-						echo "breaking out of loop (should never see this, hopefully)"
-						break
-					fi
-
-					last_checked="$svnrev"	
-
+				for ((s=0; s<${#svnrevs[@]}; s++)); do
+					svnrev="${svnrevs[$s]}"
 					ignorecommit="0"
 					fullmsg=$(svn log $svnbranch -r$svnrev)
 					for ((i=0; i< ${#IGNOREMSGS[@]}; i++)) do
 						imsg="${IGNOREMSGS[$i]}"
 						if [[ $( echo "$fullmsg" | egrep "$imsg") ]]; then
 							ignorecommit="1"
+							break
 						fi
 					done
 
 					# check for svnmerge
-					if [[ $ignorecommit -eq 1 ]]; then
-						svn_backlog=$[$svn_backlog+1]
-					else
-						found_last_svncommit="1"
+					if [[ $ignorecommit -eq 0 ]]; then
 						last_svncommit="$svnrev"
+						break
 					fi
 				done
 
@@ -118,28 +110,32 @@ for gitrepo in $REPOS; do
 				#echo "svn: $last_svncommit"
 
 				if [[ "$last_gitcommit" != "$last_svncommit" ]]; then
-					echo "REV MISMATCH FOUND: $gitrepo / $gitbranch / $tool"
-					echo "> last git rev: $last_gitcommit"
-					echo "> last svn rev: $last_svncommit"
+					echo "      > rev mismatch $gitrepo / $gitbranch / $tool"
+					echo "        > last git rev: $last_gitcommit"
+					echo "        > last svn rev: $last_svncommit"
 				fi
 
 			fi # end if /branches exists in svn
 		done # end foreach tool
 
 		echo ""
-		echo "checking for repo completion..."
+		echo "    > checking for repo completion..."
 		
 		# check that each repo is complete
 		for svntool in $( cat $WORKDIR/expected/${svnversion}_${gitbranch} ); do
 
 			if [[ ! -d $svntool ]]; then
-				echo "MISSING TOOL: $svntool not found in $gitrepo / $gitbranch"
+				echo "      > missing tool: $svntool not found in $gitrepo / $gitbranch"
 			fi
 
 		done # end each svn tool
 
+		echo ""
+
 	done # end foreach git branch
 
+	echo ""
+	echo ""
 
 done # end foreach git repo
 
