@@ -24,7 +24,7 @@ for VERSION in $VERSIONS; do
 
 	# create empty repo
 	if [[ -d "$WORK/$repo" ]]; then
-		echo "error: combined repo already exists. previous run perhaps?"
+		echo "error: combined repo $repo already exists. previous run perhaps?"
 		continue
 	else
 		mkdir "$WORK/$repo"
