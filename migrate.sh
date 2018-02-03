@@ -75,9 +75,11 @@ for TOOL in $TOOLS; do
 			done
 			echo " - adding placeholders to empty directories" >> commitmsg
 		fi
-	
+
+		cleanup_commit="0"	
 		if [[ -n $( git diff-index --name-only HEAD -- ) ]]; then
 			git commit -m "temporary placeholders for empty dirs"
+			cleanup_commit="1"
 		fi	
 	
 		# shift down a level (prep for future merges into single repo)
@@ -85,7 +87,9 @@ for TOOL in $TOOLS; do
 		#git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'"$TOOL"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE || true' HEAD
 
 		# now remove the placeholder commit
-		git reset --hard HEAD^	
+		if [[ $cleanup_commit -eq 1 ]]; then
+			git reset --hard HEAD^
+		fi
 
 		#git branch -r -d "origin/$branch"
 	done
