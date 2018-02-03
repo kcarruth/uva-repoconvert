@@ -19,8 +19,10 @@ IGNOREMSGS=(
 	"Removed merge tracking for \"svnmerge\" for"
 	"hiding target directories from svn"
 	"hiding target dirs from svn"
+	"hiding target dirs for"
 	"hiding [^ ]+ target dirs"
 	"Cleanup Merge of trunk into"
+	"delete the [^ ]+ prod SVN properties"
 )
 
 if [[ $1 ]]; then
