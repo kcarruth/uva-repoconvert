@@ -12,7 +12,7 @@ BRANCHES="prod preprod test dev"
 if [[ $1 ]]; then
 	REPOS="$1"
 else
-	echo "error: no repo specified
+	echo "error: no repo specified"
 	exit
 fi
 
