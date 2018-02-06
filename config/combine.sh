@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# combine.sh
 
 START=$( date +%s )
 

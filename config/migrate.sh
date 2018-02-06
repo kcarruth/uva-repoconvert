@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# migrate.sh
 
 START=$( date +%s )
 
