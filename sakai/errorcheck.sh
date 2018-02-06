@@ -5,7 +5,7 @@
 START=$( date +%s )
 
 BASEDIR="/home/vagrant/repoconv"
-WORKDIR="$BASEDIR/work"
+WORKDIR="$BASEDIR/work/sakai"
 TOOLDIR="$WORKDIR/tools"
 REPODIR="$WORKDIR/combined"
 

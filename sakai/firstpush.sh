@@ -4,7 +4,7 @@
 # ONLY FOR INITIAL PUSHES
 
 BASEDIR="/home/vagrant/repoconv"
-WORKDIR="$BASEDIR/work"
+WORKDIR="$BASEDIR/work/sakai"
 REPODIR="$WORKDIR/combined"
 
 BRANCHES="prod preprod test dev"

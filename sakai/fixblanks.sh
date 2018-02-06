@@ -3,7 +3,7 @@
 # fix-up placeholder empty commits
 
 BASEDIR="/home/vagrant/repoconv"
-WORKDIR="$BASEDIR/work"
+WORKDIR="$BASEDIR/work/sakai"
 TOOLDIR="$WORKDIR/tools"
 
 for tool in $( ls $TOOLDIR ); do

@@ -5,7 +5,7 @@
 START=$( date +%s )
 
 BASE="/home/vagrant/repoconv"
-WORK="work/tools"
+WORK="$BASE/work/sakai/tools"
 
 SVN_ROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab"
 AUTHORS_FILE="$BASE/authors/combined.txt"

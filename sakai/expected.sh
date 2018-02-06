@@ -3,7 +3,7 @@
 # generate some list files of what tools should be where
 
 BASEDIR="/home/vagrant/repoconv"
-WORKDIR="$BASEDIR/work"
+WORKDIR="$BASEDIR/work/sakai"
 OUTDIR="$WORKDIR/expected"
 
 SVNROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai"

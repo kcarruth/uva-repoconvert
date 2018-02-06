@@ -13,9 +13,9 @@ fi
 STATES="dev test preprod prod"
 
 BASE="/home/vagrant/repoconv"
-TOOLS="$BASE/work/tools"
-IGNORE="$BASE/work/ignore"
-WORK="$BASE/work/combined"
+TOOLS="$BASE/work/sakai/tools"
+IGNORE="$BASE/work/sakai/ignore"
+WORK="$BASE/work/sakai/combined"
 SVNROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai"
 
 for VERSION in $VERSIONS; do
