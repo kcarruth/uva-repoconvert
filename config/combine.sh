@@ -17,7 +17,9 @@ fi
 
 # list remote branches
 cd $WORKDIR/fromsvn
-rbranches=$( git branch | sed "s/^\.\.//" )
+
+# create empty repo
+git init $WORKDIR/combined
 
 # merge in dirs into each local branch
 cd $WORKDIR/combined
@@ -26,16 +28,20 @@ cd $WORKDIR/combined
 git remote add fromsvn $WORKDIR/fromsvn
 git fetch fromsvn
 
-for lbranch in $( git branch | sed "s/^\.\.//" ); do
-	git checkout $lbranch
+rbranches=$( git branch | sed "s/^\.\.//" )
+for rbranch in $rbranches; do
 
-	for rbranch in $rbranches; do
+	git rebase --committer-date-is-author-date fromsvn/$rbranch
 
-		git rebase --committer-date-is-author-date fromsvn/$rbranch
+done
 
-	done
+# rename branch to test (starting there) 
+git branch -m master test
 
-done # end while read branch	
+# gitignore
+echo "override.properties" > local/.gitignore
+git add local/.gitignore
+git commit -m "setting ignore for override.properties files"
 
 # cleanup
 git remote rm fromsvn
