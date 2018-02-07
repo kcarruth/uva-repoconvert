@@ -18,15 +18,17 @@ cd $WORKDIR/fromsvn
 rbranches=$( git branch | sed "s/^..//" )
 
 # create empty repo
-git init $WORKDIR/combined
-
-# merge in dirs into each local branch
+#git init $WORKDIR/combined
+mkdir -p $WORKDIR/combined
 cd $WORKDIR/combined
+git init
+git commit --allow-empty -m "initializing archive repository"
 
 # add remote repo
 git remote add fromsvn $WORKDIR/fromsvn
 git fetch fromsvn
 
+# merge in remote repo branches
 for rbranch in $rbranches; do
 	echo "$rbranch"
 
@@ -36,7 +38,7 @@ done
 
 
 # cleanup
-#git remote rm fromsvn
+git remote rm fromsvn
 
 TIME=$( expr $(date +%s) - $START )
 echo "Finished in $TIME seconds at $( date +%F\ %T )"
