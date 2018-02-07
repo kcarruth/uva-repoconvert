@@ -17,7 +17,7 @@ fi
 
 # list remote branches
 cd $WORKDIR/fromsvn
-rbranches=$( git branch | sed "s/^\.\.//" )
+rbranches=$( git branch | sed "s/^..//" )
 
 # create empty repo
 git init $WORKDIR/combined
