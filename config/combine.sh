@@ -17,6 +17,7 @@ fi
 
 # list remote branches
 cd $WORKDIR/fromsvn
+rbranches=$( git branch | sed "s/^\.\.//" )
 
 # create empty repo
 git init $WORKDIR/combined
@@ -28,7 +29,6 @@ cd $WORKDIR/combined
 git remote add fromsvn $WORKDIR/fromsvn
 git fetch fromsvn
 
-rbranches=$( git branch | sed "s/^\.\.//" )
 for rbranch in $rbranches; do
 
 	git rebase --committer-date-is-author-date fromsvn/$rbranch
