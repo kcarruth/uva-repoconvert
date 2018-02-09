@@ -7,7 +7,7 @@ WORKDIR="$BASEDIR/work/misc"
 
 INITOPTS=""
 FETCHOPTS="--no-follow-parent --authors-file=$BASEDIR/authors/combined.txt"
-CLONEOPTS="$INIT_OPTS $FETCH_OPTS"
+CLONEOPTS="$INITOPTS $FETCHOPTS"
 
 SVNROOT="svn+ssh://atgsvn.itc.virginia.edu/misc"
 
