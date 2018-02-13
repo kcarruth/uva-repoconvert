@@ -1,10 +1,10 @@
 readme test
 ===========
 
-- a list item
-	```a code block```
-- another list item
+1 a list item
+
 	`a code snip`
-- another list item
+
+2 another list item
 
 	`a code snip`
