@@ -43,11 +43,11 @@ while read branch ref; do
 	git checkout $gitbranch
 
 	# move down one two levels
-	git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'local/"$gitbranch"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && if [ -f $GIT_INDEX_FILE.new ]; then mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE; fi' HEAD
+	#git filter-branch -f --index-filter 'git ls-files -s | sed "s#\t\"*#&'local/"$gitbranch"'/#" | GIT_INDEX_FILE=$GIT_INDEX_FILE.new git update-index --index-info && if [ -f $GIT_INDEX_FILE.new ]; then mv $GIT_INDEX_FILE.new $GIT_INDEX_FILE; fi' HEAD
 
 done # end while read branch	
 
-git branch -d master
+git branch -D master
 
 TIME=$( expr $(date +%s) - $START )
 echo "Finished in $TIME seconds at $( date +%F\ %T )"
