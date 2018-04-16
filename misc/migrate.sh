@@ -6,7 +6,7 @@ BASEDIR="/home/vagrant/repoconv"
 WORKDIR="$BASEDIR/work/misc"
 
 INITOPTS=""
-FETCHOPTS="--no-follow-parent --authors-file=$BASEDIR/authors/combined.txt"
+FETCHOPTS="--no-follow-parent --authors-file=$BASEDIR/scripts/authors.txt"
 CLONEOPTS="$INITOPTS $FETCHOPTS"
 
 SVNROOT="svn+ssh://atgsvn.itc.virginia.edu/misc"

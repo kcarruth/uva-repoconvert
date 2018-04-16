@@ -8,7 +8,7 @@ BASE="/home/vagrant/repoconv"
 WORK="$BASE/work/sakai/tools"
 
 SVN_ROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab"
-AUTHORS_FILE="$BASE/authors/combined.txt"
+AUTHORS_FILE="$BASE/scripts/authors.txt"
 
 INIT_OPTS=""
 #INIT_OPTS="--no-metadata"

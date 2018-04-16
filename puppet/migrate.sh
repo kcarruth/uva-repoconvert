@@ -8,7 +8,7 @@ BASEDIR="/home/vagrant/repoconv"
 WORKDIR="$BASEDIR/work/puppet"
 
 INITOPTS=""
-FETCHOPTS="--no-follow-parent --authors-file=$BASEDIR/authors/combined.txt"
+FETCHOPTS="--no-follow-parent --authors-file=$BASEDIR/scripts/authors.txt"
 
 SVNROOT="svn+ssh://atgsvn.itc.virginia.edu/puppet"
 

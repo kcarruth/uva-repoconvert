@@ -8,7 +8,7 @@ BASEDIR="/home/vagrant/repoconv"
 WORKDIR="$BASEDIR/work/archive"
 
 SVNROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai"
-AUTHORSFILE="$BASEDIR/authors/combined.txt"
+AUTHORSFILE="$BASEDIR/scripts/authors.txt"
 
 INIT_OPTS=""
 FETCH_OPTS="--no-follow-parent --authors-file=$AUTHORSFILE"

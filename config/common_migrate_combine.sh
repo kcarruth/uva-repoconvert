@@ -12,7 +12,7 @@ if [[ ! -d $WORKDIR ]]; then
 fi
 
 INITOPTS=""
-FETCHOPTS="--no-follow-parent --authors-file=$BASEDIR/authors/combined.txt"
+FETCHOPTS="--no-follow-parent --authors-file=$BASEDIR/scripts/authors.txt"
 CLONEOPTS="$INITOPTS $FETCHOPTS"
 
 SVNROOT="svn+ssh://atgsvn.itc.virginia.edu/sakai/uva-collab/uva-config/branches/sakai_11-x_dev/server"
