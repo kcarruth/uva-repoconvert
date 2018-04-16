@@ -25,7 +25,21 @@ else
 	branches="centos7,cus-chroot,test"
 	sed -i "s|REPLACEME/\*|branches/\{$branches\}|" .git/config
 
-	git svn fetch $FETCHOPTS
+  git svn fetch $FETCHOPTS
+
+	# generate branches
+	git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin | grep -v "^origin/SAK" | grep -v "@.*$" |
+	while read branch ref; do
+    gitbranch=`echo $branch | sed "s|origin/||g"`
+    git branch $gitbranch $ref
+	
+		# in-branch work
+		git checkout $gitbranch
+	
+		#git branch -r -d "origin/$branch"
+	done
+	
+	git branch -D master
 
 fi
 
